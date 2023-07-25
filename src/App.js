@@ -23,51 +23,46 @@ function App() {
   const [user, loading] = useAuthState(firebaseAuth);
 
   const fetchData = useCallback(async () => {
-    await getAllFoodItems().then((data) => {
-      dispatch(setFoodItems(data));
-    });
-  }, []);
+    const data = await getAllFoodItems();
+    dispatch(setFoodItems(data));
+  }, [dispatch]);
 
   const fetchCartItems = useCallback(async (uid) => {
-    await getCartItems(uid).then((data) => {
-      dispatch(setCartItems(data));
-    });
-  }, []);
+    const data = await getCartItems(uid);
+    dispatch(setCartItems(data));
+  }, [dispatch]);
 
   const fetchUserDetails = useCallback(async (uid) => {
     const data = await fetchUserData(uid);
     dispatch(setUserInfo(data));
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   useEffect(() => {
-    fetchCartItems(userInfo?.uid);
-  }, [userInfo, fetchCartItems]);
+    if (userInfo?.uid) {
+      fetchCartItems(userInfo.uid);
+    }
+  }, [userInfo?.uid, fetchCartItems]);
 
   useEffect(() => {
-    if (loading) return;
-    if (user) {
+    if (!loading && user) {
       fetchUserDetails(user.email);
     }
   }, [user, loading, fetchUserDetails]);
 
-  // disabling body scroll if cart is open
+  // Disabling body scroll if cart is open
   useEffect(() => {
     const body = document.querySelector("body");
-    if (isOpen) {
-      body.style.overflow = "hidden";
-    } else {
-      body.style.overflow = "auto";
-    }
+    body.style.overflow = isOpen ? "hidden" : "auto";
   }, [isOpen]);
 
   return (
     <main>
       <Routes>
-        <Route path="/" element={<Home />} exact="true" />
+        <Route path="/" element={<Home />} exact={true} />
         <Route path="/sign-in" element={<SignIn />} />
         {/* admin only */}
         <Route
